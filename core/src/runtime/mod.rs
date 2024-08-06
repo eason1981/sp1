@@ -1049,12 +1049,17 @@ impl<'a> Runtime<'a> {
     pub fn execute_record(&mut self) -> Result<(Vec<ExecutionRecord>, bool), ExecutionError> {
         self.emit_events = true;
         self.print_report = true;
+        println!("gupeng - execute_record 1111 = {}", self.records.len());
         let done = self.execute()?;
-        Ok((std::mem::take(&mut self.records), done))
+        println!("gupeng - execute_record 2222 = {}", self.records.len());
+        let res = std::mem::take(&mut self.records);
+        println!("gupeng - execute_record 3333 = {}", res.len());
+        Ok((res, done))
     }
 
     /// Execute up to `self.shard_batch_size` cycles, returning a copy of the prestate and whether the program ended.
     pub fn execute_state(&mut self) -> Result<(ExecutionState, bool), ExecutionError> {
+        print!("gupeng shard_batch_size = {}", self.shard_batch_size);
         self.emit_events = false;
         self.print_report = false;
         let state = self.state.clone();
@@ -1133,10 +1138,19 @@ impl<'a> Runtime<'a> {
         // Get the final public values.
         let public_values = self.record.public_values;
 
+        println!("gupeng - xxxx = shards = {}", self.records.len());
+        println!(
+            "gupeng - self.record.cpu_events = {:#?}",
+            self.record.cpu_events
+        );
+
         // Push the remaining execution record, if there are any CPU events.
         if !self.record.cpu_events.is_empty() {
-            self.bump_record();
+            // gupeng
+            // self.bump_record();
         }
+
+        println!("gupeng - yyyy = shards = {}", self.records.len());
 
         if done {
             self.postprocess();
@@ -1144,6 +1158,8 @@ impl<'a> Runtime<'a> {
             // Push the remaining execution record with memory initialize & finalize events.
             self.bump_record();
         }
+
+        println!("gupeng - zzzz = shards = {}", self.records.len());
 
         // Set the global public values for all shards.
         let mut last_next_pc = 0;

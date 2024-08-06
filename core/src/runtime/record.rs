@@ -521,6 +521,10 @@ impl ExecutionRecord {
             last
         );
 
+        // gupeng
+        println!("gupeng - split_len before = {}", shards.len());
+
+        // gupeng
         if last {
             self.memory_initialize_events
                 .sort_by_key(|event| event.addr);
@@ -570,6 +574,10 @@ impl ExecutionRecord {
             }
         }
 
+        // gupeng
+        println!("gupeng - split_len after = {}", shards.len());
+
+        // gupeng
         shards
     }
 }

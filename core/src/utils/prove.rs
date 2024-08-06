@@ -161,7 +161,7 @@ where
             .save(&mut checkpoint_file)
             .map_err(SP1CoreProverError::IoError)?;
         checkpoints.push(checkpoint_file);
-
+        println!("gupeng checkpoints.len = {}", checkpoints.len());
         // If we've reached the final checkpoint, break out of the loop.
         if done {
             break (
@@ -250,6 +250,7 @@ where
                 let is_last_checkpoint = checkpoint_idx == nb_checkpoints - 1;
                 let mut deferred = deferred.split(is_last_checkpoint, opts.split_opts);
 
+                println!("gupeng deferred.len = {}", deferred.len());
                 // Update the public values & prover state for the shards which do not contain "cpu events"
                 // before committing to them.
                 if !is_last_checkpoint {
@@ -322,6 +323,8 @@ where
                 report_aggregate += report;
                 reset_seek(&mut checkpoint_file);
 
+                println!("gupeng - records.len 1111 = {}", records.len());
+
                 // Update the public values & prover state for the shards which contain "cpu events".
                 for record in records.iter_mut() {
                     state.shard += 1;
@@ -359,7 +362,11 @@ where
                     state.start_pc = state.next_pc;
                     record.public_values = state;
                 }
+                println!("gupeng - records.len 2222 = {}", records.len());
                 records.append(&mut deferred);
+                println!("gupeng - records.len 3333 = {}", records.len());
+
+                // panic!("gupeng - records.len = {}", records.len());
 
                 records_tx.send(records).unwrap();
             }
@@ -509,7 +516,9 @@ fn trace_checkpoint(
     // We already passed the deferred proof verifier when creating checkpoints, so the proofs were
     // already verified. So here we use a noop verifier to not print any warnings.
     runtime.subproof_verifier = Arc::new(NoOpSubproofVerifier);
+    println!("gupeng records.len = {}", runtime.records.len());
     let (events, _) = runtime.execute_record().unwrap();
+    println!("gupeng events.len = {}", events.len());
     (events, runtime.report)
 }
 
