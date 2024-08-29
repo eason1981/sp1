@@ -97,6 +97,7 @@ pub fn generate_permutation_trace<F: PrimeField, EF: ExtensionField<F>>(
     let permutation_trace_width = permutation_trace_width(sends.len() + receives.len(), batch_size);
     let height = main.height();
     let mut permutation_trace = RowMajorMatrix::new(
+        // NOTE: eason - the first row are all zeros.
         vec![EF::zero(); permutation_trace_width * height],
         permutation_trace_width,
     );
