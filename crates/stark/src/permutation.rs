@@ -41,6 +41,12 @@ pub fn populate_permutation_row<F: PrimeField, EF: ExtensionField<F>>(
         *value = chunk
             .into_iter()
             .map(|(interaction, is_send)| {
+                // NOTE: eason -
+                // let rlc = X + Y * interaction_kind + Y^2 * value1 + Y*3 * value2 + Y^4 * value3
+                // ... let multiplicity = interaction.multiplicity;
+                // let permutation_value = multiplicity / rlc;
+                // let permutation_value = if is_send { permutation_value } else {
+                // -permutation_value };
                 let mut denominator = alpha;
                 let mut betas = betas.clone();
                 denominator +=
@@ -56,6 +62,7 @@ pub fn populate_permutation_row<F: PrimeField, EF: ExtensionField<F>>(
 
                 EF::from_base(mult) / denominator
             })
+            // NOTE: eason - batch1 = perm1 + perm2, batch2 = perm3 + perm4 ...
             .sum();
     }
 }
@@ -85,6 +92,8 @@ pub fn generate_permutation_trace<F: PrimeField, EF: ExtensionField<F>>(
     //
     // where f_{i, c_k} is the value at row i for column c_k. The computed value is essentially a
     // fingerprint for the interaction.
+    //
+    // NOTE: eason - permutation trace width = (sends.len + receives.len) / batch_size + 1
     let permutation_trace_width = permutation_trace_width(sends.len() + receives.len(), batch_size);
     let height = main.height();
     let mut permutation_trace = RowMajorMatrix::new(
@@ -131,11 +140,14 @@ pub fn generate_permutation_trace<F: PrimeField, EF: ExtensionField<F>>(
     }
 
     let zero = EF::zero();
+
+    // NOTE: eason - sum = batch1 (perm1 + perm2 + ...) + batch2 + batch3
     let cumulative_sums = permutation_trace
         .par_rows_mut()
         .map(|row| row[0..permutation_trace_width - 1].iter().copied().sum::<EF>())
         .collect::<Vec<_>>();
 
+    // NOTE: eason - cumulative_sum = sum1 + sum2 + ...
     let cumulative_sums =
         cumulative_sums.into_par_iter().scan(|a, b| *a + *b, zero).collect::<Vec<_>>();
 
@@ -211,8 +223,8 @@ pub fn eval_permutation_constraints<F, AB>(
             let mut rlc = alpha.clone();
             let mut betas = beta.powers();
 
-            rlc += betas.next().unwrap()
-                * AB::ExprEF::from_canonical_usize(interaction.argument_index());
+            rlc += betas.next().unwrap() *
+                AB::ExprEF::from_canonical_usize(interaction.argument_index());
             for (field, beta) in interaction.values.iter().zip(betas.clone()) {
                 let elem = field.apply::<AB::Expr, AB::Var>(&preprocessed_local, main_local);
                 rlc += beta * elem;
@@ -223,8 +235,8 @@ pub fn eval_permutation_constraints<F, AB>(
             multiplicities.push(
                 interaction
                     .multiplicity
-                    .apply::<AB::Expr, AB::Var>(&preprocessed_local, main_local)
-                    * send_factor,
+                    .apply::<AB::Expr, AB::Var>(&preprocessed_local, main_local) *
+                    send_factor,
             );
         }
 
