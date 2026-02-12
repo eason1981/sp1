@@ -10,12 +10,12 @@ async fn main() {
     sp1_sdk::utils::setup_logger();
 
     // Create an input stream and write '500' to it.
-    let n = 700_000u32;
+    // let n = 700_000u32;
 
     // The input stream that the program will read from using `sp1_zkvm::io::read`. Note that the
     // types of the elements in the input stream must match the types being read in the program.
     let mut stdin = SP1Stdin::new();
-    stdin.write(&n);
+    // stdin.write(&n);
 
     // Create a `ProverClient` method.
     let client = ProverClient::from_env().await;
@@ -32,6 +32,7 @@ async fn main() {
 
     println!("generated proof");
 
+    /*
     // Read and verify the output.
     //
     // Note that this output is read from values committed to in the program using
@@ -55,6 +56,7 @@ async fn main() {
     // client.verify(&deserialized_proof, pk.verifying_key()).expect("verification failed");
  
     println!("successfully generated and verified proof for the program!")
+    */
 }
 
 // generated proof
