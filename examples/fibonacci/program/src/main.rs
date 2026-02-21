@@ -9,29 +9,17 @@
 sp1_zkvm::entrypoint!(main);
 
 pub fn main() {
-    // Read an input to the program.
-    //
-    // Behind the scenes, this compiles down to a system call which handles reading inputs
-    // from the prover.
-    let n = sp1_zkvm::io::read::<u32>();
-
-    // Write n to public input
-    sp1_zkvm::io::commit(&n);
-
-    // Compute the n'th fibonacci number, using normal Rust code.
-    let mut a = 0;
-    let mut b = 1;
-    for _ in 0..n {
-        let mut c = a + b;
-        c %= 7919; // Modulus to prevent overflow.
+    let n = core::hint::black_box(1_000_000);
+    // let n = core::hint::black_box(2_000_000);
+    // let n = core::hint::black_box(4_000_000);
+    let mut a: u32 = 0;
+    let mut b: u32 = 1;
+    for _ in 1..n {
+        let sum = a + b;
         a = b;
-        b = c;
+        b = sum;
     }
-
-    // Write the output of the program.
-    //
-    // Behind the scenes, this also compiles down to a system call which handles writing
-    // outputs to the prover.
-    sp1_zkvm::io::commit(&a);
-    sp1_zkvm::io::commit(&b);
+    if a == 0 {
+        panic!();
+    }
 }

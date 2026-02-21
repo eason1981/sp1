@@ -31,6 +31,16 @@ mod native {
         Ok(child)
     }
 
+    pub(crate) async fn start_fake_server(_cuda_id: u32) -> Result<Child, CudaClientError> {
+        let mut cmd = Command::new("ls");
+
+        cmd.kill_on_drop(true)
+            .stdout(Stdio::inherit())
+            .stderr(Stdio::inherit())
+            .spawn()
+            .map_err(|e| CudaClientError::new_connect(e, "Could not start `fake-server`"))
+    }
+
     /// Start the server binary, ideally with systemd-run. If systemd (--user) is not available,
     /// we will run the binary as a daemon.
     async fn start_binary(cuda_id: u32, path: &Path) -> Result<Child, CudaClientError> {
@@ -227,3 +237,4 @@ mod native {
 }
 
 pub(crate) use native::start_server;
+pub(crate) use native::start_fake_server;

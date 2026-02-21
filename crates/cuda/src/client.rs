@@ -128,7 +128,9 @@ impl CudaClientInner {
         }
 
         // Actually start the server now that we know there isn't one running.
-        let child = crate::server::start_server(cuda_id).await?;
+        // gupeng
+        // let child = crate::server::start_server(cuda_id).await?;
+        let child = crate::server::start_fake_server(cuda_id).await?;
 
         // Connect to the server we just started.
         let connection = Self::connect_inner(cuda_id).await?;

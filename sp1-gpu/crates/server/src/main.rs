@@ -8,6 +8,7 @@ static GLOBAL: Jemalloc = Jemalloc;
 use clap::Parser;
 use server::Server;
 use sp1_gpu_cudart::run_in_place;
+use sp1_core_machine::utils::setup_logger;
 
 mod server;
 
@@ -20,7 +21,9 @@ struct Args {
 #[tokio::main]
 #[allow(clippy::print_stdout)]
 async fn main() {
-    tracing_subscriber::fmt::init();
+    // gupeng
+    // tracing_subscriber::fmt::init();
+    setup_logger();
 
     let args = Args::parse();
 
