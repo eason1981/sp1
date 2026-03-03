@@ -9,7 +9,7 @@ use eyre::OptionExt;
 use hashbrown::HashMap;
 use sp1_primitives::consts::{
     INSTRUCTION_WORD_SIZE, MAXIMUM_MEMORY_SIZE, NOTE_UNTRUSTED_PROGRAM_ENABLED, PAGE_SIZE,
-    STACK_TOP,
+    STACK_TOP, STACK_TOP_PICO,
 };
 
 /// RISC-V 64IM ELF (Executable and Linkable Format) File.
@@ -97,6 +97,9 @@ impl Elf {
             eyre::bail!("invalid entrypoint, entry: {}", entry);
         }
 
+        // Use STACK_TOP_PICO for pico ELFs (detected by low entry address)
+        let effective_stack_top = if entry < 0x10000000 { STACK_TOP_PICO } else { STACK_TOP };
+
         // Get the segments of the ELF file.
         let segments = elf.segments().ok_or_else(|| eyre::eyre!("failed to get segments"))?;
         if segments.len() > 256 {
@@ -124,6 +127,7 @@ impl Elf {
                     &mut image,
                     &mut page_prot_image,
                     prev_segment_end_addr,
+                    effective_stack_top,
                 )?;
             }
 
@@ -178,6 +182,7 @@ impl Elf {
         image: &mut HashMap<u64, u64>,
         page_prot_image: &mut HashMap<u64, u8>,
         prev_segment_end_addr: Option<u64>,
+        effective_stack_top: u64,
     ) -> eyre::Result<Option<u64>> {
         // Get the file size of the segment as an u32.
         let file_size = segment.p_filesz;
@@ -202,7 +207,9 @@ impl Elf {
 
         // If there are sections below the STACK_TOP, we want to error, this could cause
         // collisions with static values.
-        if vaddr < STACK_TOP {
+        // Skip this check for pico ELFs since they have different memory layout.
+        let is_pico = effective_stack_top == STACK_TOP_PICO;
+        if !is_pico && vaddr < effective_stack_top {
             eyre::bail!("ELF has a segment that is below the STACK_TOP");
         }
 

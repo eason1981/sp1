@@ -40,13 +40,18 @@ pub const NOTE_UNTRUSTED_PROGRAM_ENABLED: u32 = 1;
 /// The stack top for the 64-bit zkvm.
 pub const STACK_TOP: u64 = 0x78000000;
 
+/// The stack top for pico zkVM.
+pub const STACK_TOP_PICO: u64 = 0x0020_0400;
+
 pub mod fd {
     /// The minimum file descriptor.
     ///
     /// Any file descriptor must be greater than this value, otherwise the executor will panic.
     ///
     /// This is useful for deprecating file descriptors.
-    pub const LOWEST_ALLOWED_FD: u32 = 10;
+    // gupeng: fix to test pico reth elf
+    // pub const LOWEST_ALLOWED_FD: u32 = 10;
+    pub const LOWEST_ALLOWED_FD: u32 = 0;
 
     /// Creates a file descriptor constant, with respect to the minimum file descriptor.
     macro_rules! create_fd {
@@ -69,19 +74,24 @@ pub mod fd {
         pub const FD_HINT: u32 = 4;
 
         /// The file descriptor through which to access `hook_ecrecover`.
-        pub const FD_ECRECOVER_HOOK: u32 = 5;
+        // pub const FD_ECRECOVER_HOOK: u32 = 5;
+        pub const FD_ECRECOVER_HOOK: u32 = 7;
 
         /// The file descriptor through which to access `hook_ed_decompress`.
-        pub const FD_EDDECOMPRESS: u32 = 6;
+        // pub const FD_EDDECOMPRESS: u32 = 6;
+        pub const FD_EDDECOMPRESS: u32 = 8;
 
         /// The file descriptor through which to access `hook_rsa_mul_mod`.
-        pub const FD_RSA_MUL_MOD: u32 = 7;
+        // pub const FD_RSA_MUL_MOD: u32 = 7;
+        pub const FD_RSA_MUL_MOD: u32 = 100;
 
         /// The file descriptor through which to access `hook_bls12_381_sqrt`.
-        pub const FD_BLS12_381_SQRT: u32 = 8;
+        // pub const FD_BLS12_381_SQRT: u32 = 8;
+        pub const FD_BLS12_381_SQRT: u32 = 12;
 
         /// The file descriptor through which to access `hook_bls12_381_inverse`.
-        pub const FD_BLS12_381_INVERSE: u32 = 9;
+        // pub const FD_BLS12_381_INVERSE: u32 = 9;
+        pub const FD_BLS12_381_INVERSE: u32 = 13;
 
         /// The file descriptor through which to access `hook_fp_sqrt`.
         pub const FD_FP_SQRT: u32 = 10;

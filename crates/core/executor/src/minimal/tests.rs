@@ -3,6 +3,61 @@ use std::sync::Arc;
 use super::*;
 use crate::Program;
 
+// cargo test -p sp1-core-executor -r test_pico_fibonacci -- --nocapture
+#[test]
+fn test_pico_fib() {
+    use bincode::serialize;
+
+    // Load the pico ELF
+    let program = Program::from_elf(
+        "../../../../brevis-vm/examples/fibonacci/app/elf/riscv64im-pico-zkvm-elf",
+    )
+    .unwrap();
+    let program = Arc::new(program);
+
+    // Create executor
+    let mut executor = MinimalExecutor::new(program.clone(), false, None);
+
+    // Provide input: n = 10
+    executor.with_input(&serialize(&10_u32).unwrap());
+
+    // Execute
+    while executor.execute_chunk().is_some() {}
+
+    // Check results
+    println!("Cycles: {}", executor.global_clk());
+}
+
+// cargo test -p sp1-core-executor -r test_pico_reth -- --nocapture
+#[test]
+fn test_pico_reth() {
+    use std::fs;
+
+    // Load the pico reth ELF
+    let program =
+        // Program::from_elf("../../../../rsp/bin/client/elf/riscv64im-pico-zkvm-elf").unwrap();
+        Program::from_elf("../../../../brevis-vm/perf/bench_data/rv64/reth-elf").unwrap();
+    let program = Arc::new(program);
+
+    // Load the input bin file
+    let input_data =
+        // fs::read("../../../../brevis-vm/perf/bench_data/rv64/reth-18884864.bin").unwrap();
+        // fs::read("../../../../brevis-vm/perf/bench_data/rv64/reth-17106222.bin").unwrap();
+        fs::read("../../../../brevis-vm/perf/bench_data/rv64/reth-23993050.bin").unwrap();
+
+    // Create executor
+    let mut executor = MinimalExecutor::new(program.clone(), false, None);
+
+    // Provide input
+    executor.with_input(&input_data);
+
+    // Execute
+    while executor.execute_chunk().is_some() {}
+
+    // Check results
+    println!("Cycles: {}", executor.global_clk());
+}
+
 #[test]
 fn test_chunk_stops_correctly() {
     use bincode::serialize;
